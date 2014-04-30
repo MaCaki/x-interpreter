@@ -77,6 +77,11 @@ public class FunctionEnvironmentRecord {
         
     }
     
+    public boolean isEmpty(){
+        if (functName == null) return true;
+        return false;
+    }
+    
     public void pop(int n){
         table.pop(n);
     }

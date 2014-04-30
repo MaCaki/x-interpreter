@@ -1,7 +1,10 @@
 package interpreter;
 import interpreter.ByteCode.*;
 /**
- *
+ * Static class that maps the string names of bytecodes to their corresponding
+ * class objects.  
+ * 
+ * 
  * @author admin
  */
 public class CodeTable {

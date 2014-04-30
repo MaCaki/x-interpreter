@@ -26,6 +26,20 @@ public class DebuggerVirtualMachine extends VirtualMachine{
     private Stack<FunctionEnvironmentRecord> EnvironmentRecordStack;
     private Stack<Integer> validBreakPoints; 
     
+    /* Step Out parameters:
+     * if stepOutFlag is set, then when continueExecution
+     *is called, the vm will continue running until it has returned from
+     *function that was active when it started to run. 
+     * 
+     * While the vm is running we check to see if the the sizeOfFuntionCallStack()
+     * has gone below originalEnvironmentSize which is set when stepOut is called. 
+     */
+    private boolean stepOutFlag; 
+    private int originalEnvironmentSize;
+    
+    
+    
+    
     public DebuggerVirtualMachine(Program prog, Vector<String> source){
         super(prog);
         sourceCodeLines = AnnotatedSourceLine.annotate(source);
@@ -40,6 +54,7 @@ public class DebuggerVirtualMachine extends VirtualMachine{
         runStack = new RunTimeStack();
         returnAddrs = new Stack();
         isRunning = true;
+        stepOutFlag =false;
         beginScope();
         validBreakPoints = new Stack<Integer>();
         inventoryValidBreakPoints();
@@ -52,6 +67,8 @@ public class DebuggerVirtualMachine extends VirtualMachine{
      */
     public void continueRunning(){
         isRunning = true;
+            /* Executes until breakpoint is hit or until it has stepped out of 
+             current function, when stepOut has been set.*/
         while (isRunning){
             ByteCode code = program.getCode(pc);
             code.execute(this);
@@ -62,8 +79,24 @@ public class DebuggerVirtualMachine extends VirtualMachine{
                 runStack.dump();
             }
             pc++;
-            /* Check to see if current line has a break point*/
+
+            /* If the ByteCode executed in this loop was a LineCode where
+             the line is breakpoint, then the setCurrentLine() function
+             will also turn off the VM.  */
+            
+            // If stepOutFlag is set, return if stack has gone below original size
+            if (stepOutFlag && sizeOfFuntionCallStack() <originalEnvironmentSize){
+                stepOutFlag = false;
+                return;
+            }
         }
+    }
+    
+    
+    
+    public void setStepOutFlag(){
+        stepOutFlag = true;
+        originalEnvironmentSize = sizeOfFuntionCallStack();
     }
     
     
@@ -123,6 +156,10 @@ public class DebuggerVirtualMachine extends VirtualMachine{
     
     private FunctionEnvironmentRecord currentRecord(){
         return EnvironmentRecordStack.peek();
+    }
+    
+    public boolean isCurrentRecordEmpty(){
+        return currentRecord().isEmpty();
     }
     
     public void setCurrentLineNumber(int n){
