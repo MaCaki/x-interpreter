@@ -14,10 +14,7 @@ import interpreter.CodeTable;
  * @author Raskolnikov
  */
 public class DebuggerCodeTable extends CodeTable{
-    
-     public static Class get(String byteCodeName){
-        return codeTable.get(byteCodeName);
-    } 
+
     public static void init(){
          // for each type of ByteCode, create a hash {"type" => ClassOfByteCode}.
         codeTable.put("ARGS", ArgsByteCode.class);
