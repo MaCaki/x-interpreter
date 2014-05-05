@@ -52,7 +52,7 @@ public class FunctionEnvironmentRecord {
     }
     
     public int getCurrentLine(){
-        return currentLine;
+        return (currentLine==null ? 0 : currentLine);
     }
     
     public String getFunctionName(){

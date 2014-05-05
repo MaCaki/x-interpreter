@@ -19,7 +19,7 @@ LIT 0 i
 GOTO continue<<3>>
 LABEL factorial<<2>>
 LINE 2
-FUNCTION factorial<<2>> 2 7
+FUNCTION factorial 2 7
 FORMAL n 0
 LINE 3
 LOAD 0 n

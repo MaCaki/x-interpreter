@@ -20,6 +20,22 @@ import java.util.Vector;
  *      continue execution, quit execution
  *      display local variable(s)
  * 
+ *   - Done - 
+ * 
+ * Milestone 5: 
+ * Step over a line     **
+ * Step into a function  **
+ * Step out of current activation of a function     **
+ * Set breakpoints where allowable  **
+ * List current breakpoint settings   **
+ * Clear designated breakpoints   **
+ * Set function tracing  
+ * Print Call Stack    
+ * Display local variables    **
+ * Display the source code of the current function  **
+ * Continue execution    **
+ * Halt execution    **
+ * 
  */
 public class DebuggerVirtualMachine extends VirtualMachine{
     private Vector<AnnotatedSourceLine> sourceCodeLines;
@@ -36,8 +52,9 @@ public class DebuggerVirtualMachine extends VirtualMachine{
      */
     private boolean stepOutFlag; 
     private int originalEnvironmentSize;
-    
-    
+    private boolean stepOverFlag;
+    private int originalLineNumber;
+    private boolean stepIntoFlag;
     
     
 
@@ -56,6 +73,9 @@ public class DebuggerVirtualMachine extends VirtualMachine{
         returnAddrs = new Stack();
         isRunning = true;
         stepOutFlag =false;
+        stepOverFlag = false;
+        originalEnvironmentSize = 0;
+        originalLineNumber = 0;
         beginScope();
         validBreakPoints = new Stack<Integer>();
         inventoryValidBreakPoints();
@@ -64,7 +84,7 @@ public class DebuggerVirtualMachine extends VirtualMachine{
     
     /**
      * This will launch the initialized VM to start running until it hits a 
-     * break point. 
+     * break point, or if one of the user entered commands has been fulfilled. 
      */
     public void continueRunning(){
         isRunning = true;
@@ -87,19 +107,80 @@ public class DebuggerVirtualMachine extends VirtualMachine{
              will also turn off the VM.  */
             
             // If stepOutFlag is set, return if stack has gone below original size
-            if (stepOutFlag && sizeOfFuntionCallStack() <originalEnvironmentSize){
-                stepOutFlag = false;
-                return;
-            }
+            if (stepOutFlag && haveSteppedOut()) return;
+            
+            // If stepOverFlag is set, return if stack has gone below original size
+            if (stepOverFlag && haveSteppedOver()) return;
+            
+            if (stepIntoFlag && haveSteppedInto()) return;
+            
         }
     }
     
+    /**
+     * Call this function before continuing execution will cause execution
+     * of the program to stop once a new line is reached, or if the current function
+     * is stepped out of. 
+     */
+    public void setStepOverFlag() {
+        stepOverFlag = true;
+        originalEnvironmentSize = sizeOfFunctionCallStack();
+        originalLineNumber = getCurrentLineNumber();
+    }
     
+    private boolean haveSteppedOver(){
+        // If execution has stepped out, then we return
+        if( sizeOfFunctionCallStack() <originalEnvironmentSize){
+            stepOverFlag = false;
+            return true;
+        }
 
+        if ((sizeOfFunctionCallStack() == originalEnvironmentSize)
+                && (getCurrentLineNumber() > originalLineNumber)){
+            stepOverFlag = false;
+            return true;
+        }
+        return false;
+    }
+
+    
+    /**
+     * Call this function before continuing execution will cause execution
+     * of the program to continue until the current FunctionEnvironmentRecord
+     * is popped, 
+     */
     public void setStepOutFlag(){
         stepOutFlag = true;
-        originalEnvironmentSize = sizeOfFuntionCallStack();
+        originalEnvironmentSize = sizeOfFunctionCallStack();
     }
+    
+    private boolean haveSteppedOut(){
+        if (sizeOfFunctionCallStack() <originalEnvironmentSize){
+                stepOutFlag = false;
+                return true;
+        }else {
+            return false;
+        }
+        
+    }
+    
+    
+    
+    public void setStepIntoFlag(){
+        stepIntoFlag = true;
+        originalEnvironmentSize = sizeOfFunctionCallStack();
+    }
+    
+    private boolean haveSteppedInto(){
+        if (originalEnvironmentSize < sizeOfFunctionCallStack() 
+                || haveSteppedOver()) {
+            stepIntoFlag = false;
+            return true;
+        } 
+        return false;
+    }
+    
+    
     
         /*  ---------   Source Code Getters and Setters -----*/
     
@@ -151,7 +232,7 @@ public class DebuggerVirtualMachine extends VirtualMachine{
         return EnvironmentRecordStack.get(n).stringifyRecord();
     }
     
-    public int sizeOfFuntionCallStack(){
+    public int sizeOfFunctionCallStack(){
         return EnvironmentRecordStack.size();
     }
     
@@ -196,6 +277,25 @@ public class DebuggerVirtualMachine extends VirtualMachine{
         value = runStack.getValueAtOffset(offset);
         return value;
     }
+    
+    /**
+     * 
+     * @param n the index of the function in the stack (0...k)
+     * @return  The name of the nth function in the stack. 
+     */
+    public String getNthFunctionName(int n) {
+        try{
+            return EnvironmentRecordStack.get(n).getFunctionName();
+        } catch (Exception e){ return null;}
+    }
+    
+    public int getNthFunctionStartLine(int n) {
+        try{
+            return EnvironmentRecordStack.get(n).getStartLine();
+        }catch (Exception e){ return 0;}
+    }
+
+    
     /*
      * Sets the name, beginline and end line of the current record.  This
      * is executed when a FUNCTION byte code is called. 
@@ -253,17 +353,14 @@ public class DebuggerVirtualMachine extends VirtualMachine{
             }
         }
     }
-
-    
-
-    
-    
-    
-    
-    
-    
-   
 }
+
+
+
+
+
+
+
 /**
  * A helper class to contain source code text as well as information about
  * the source code such as if a break point is set.  
