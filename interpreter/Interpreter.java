@@ -35,14 +35,15 @@ public class Interpreter {
         String programName,sourceFile, byteCodeFile;
 
 	public Interpreter(String args[]) {
+            CodeTable.init();
             if (args[0].equals("-d")) {
-                DebuggerCodeTable.init();
+                CodeTable.addDebugCode();
+                //DebuggerCodeTable.init();
                 debugging = true;
                 programName = args[1];
                 sourceFile = programName +".x";
                 byteCodeFile = programName + ".x.cod";
             }else{
-                CodeTable.init();
                 byteCodeFile = args[0];
             }    
 
@@ -55,7 +56,7 @@ public class Interpreter {
 	}
 
 	void run() {
-		Program program = bcl.loadCodes(debugging);
+		Program program = bcl.loadCodes();
                 //-------------Debugging Execution -------------
                 if (debugging){
                     Vector<String> sourceFileVector = new Vector<String>();

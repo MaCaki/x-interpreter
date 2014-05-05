@@ -50,6 +50,7 @@ public class DebuggerVirtualMachine extends VirtualMachine{
      * While the vm is running we check to see if the the sizeOfFuntionCallStack()
      * has gone below originalEnvironmentSize which is set when stepOut is called. 
      */
+    private Stack<Integer> stepOutLevels;
     private boolean stepOutFlag; 
     private int originalEnvironmentSize;
     private boolean stepOverFlag;
@@ -74,6 +75,7 @@ public class DebuggerVirtualMachine extends VirtualMachine{
         returnAddrs = new Stack();
         isRunning = true;
         stepOutFlag =false;
+        stepOutLevels = new Stack<Integer>();
         stepOverFlag = false;
         originalEnvironmentSize = 0;
         originalLineNumber = 0;
@@ -146,22 +148,33 @@ public class DebuggerVirtualMachine extends VirtualMachine{
 
     
     /**
-     * Call this function before continuing execution will cause execution
-     * of the program to continue until the current FunctionEnvironmentRecord
-     * is popped, 
+     * This will cause the vm to stop running once the FER stack decreases
+     * to CurrentSize - 1.   Mulitple step outs can be implemented, so that
+     * there are several break points at different levels of the FER stack. 
      */
-    public void setStepOutFlag(){
+    public void pushStepOut(){
         stepOutFlag = true;
-        originalEnvironmentSize = sizeOfFunctionCallStack();
+        stepOutLevels.push(sizeOfFunctionCallStack());
+        
     }
     
     private boolean haveSteppedOut(){
-        if (sizeOfFunctionCallStack() <originalEnvironmentSize){
-                stepOutFlag = false;
-                return true;
+        
+        if (sizeOfFunctionCallStack() <stepOutLevels.peek()){
+            stepOutLevels.pop();
+            if (stepOutLevels.empty()) stepOutFlag=false;
+            return true;
         }else {
             return false;
         }
+        
+        
+//        if (sizeOfFunctionCallStack() <originalEnvironmentSize){
+//                stepOutFlag = false;
+//                return true;
+//        }else {
+//            return false;
+//        }
         
     }
     

@@ -33,4 +33,14 @@ public class CodeTable {
         codeTable.put("WRITE", WriteByteCode.class);        
     }
     
+    public static void addDebugCode(){
+        codeTable.put("LINE", LineByteCode.class);
+        codeTable.put("FUNCTION", FunctionByteCode.class);
+        codeTable.put("FORMAL", FormalByteCode.class);
+        codeTable.put("CALL", DebugCallCode.class);
+        codeTable.put("LIT", DebugLitCode.class);
+        codeTable.put("POP", DebugPopCode.class);
+        codeTable.put("RETURN", DebugReturnCode.class);
+    }
+    
 }

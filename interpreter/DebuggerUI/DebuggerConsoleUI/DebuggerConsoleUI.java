@@ -217,7 +217,11 @@ public class DebuggerConsoleUI {
     }
     
     private void stepOutOfCurrentFunction(){
-        vm.setStepOutFlag();
+        
+        vm.pushStepOut();
+        
+        
+     //   vm.setStepOutFlag();
         continueRunning();
     }
     

@@ -11,15 +11,20 @@ public class DebugReturnCode extends ReturnByteCode{
     
     public void execute(VirtualMachine vm){
         DebuggerVirtualMachine debugvm = ((DebuggerVirtualMachine)vm);
-        super.execute(debugvm);
-        debugvm.returnFromFunction();
         
         if(debugvm.isTracing()){
             String indent = "";
             for (int i=0; i<debugvm.sizeOfFunctionCallStack(); i++) indent += "-";
             
             String name = debugvm.getCurrentFunctionName();
-            System.out.print(indent +  name +"(");
+            int returnValue = debugvm.peekRunStack();
+            System.out.println(indent + "exit: " + name + ":" + returnValue);
         }
+        
+        // perform usual return execution after printing out tracing information. 
+        super.execute(debugvm);
+        debugvm.returnFromFunction();
+        
+        
     }
 }
