@@ -24,6 +24,7 @@ public class DebuggerConsoleUI {
     DebuggerVirtualMachine vm;
     StringTokenizer currentCommandTokens;
     
+    
     public DebuggerConsoleUI(Program prog, Vector<String> source){
         vm = new DebuggerVirtualMachine(prog, source);
         initializeCommandTable();
@@ -201,6 +202,10 @@ public class DebuggerConsoleUI {
         }
     }
     
+    private void turnOnStackTrace(){
+        vm.turnOnStackTrace();
+    }
+    
     private void printVariables(){
         Set<String> vars = vm.getCurrentVariables();
         System.out.println("Current Variables: ");
@@ -244,13 +249,13 @@ public class DebuggerConsoleUI {
         System.out.printf("\t %-10s \t %s \n", "stover", "Step over current line."); 
         System.out.printf("\t %-10s \t %s \n", "stin", "Step into the current line."); 
         System.out.printf("\t %-10s \t %s \n", "setb <lines>", "Set break point on the lines corresponding to the numbers passed to it.");
-        
-        System.out.println();
         System.out.printf("\t %-10s \t %s \n", "clrb <lines>", "Clear break point on the lines corresponding to the numbers passed to it.");
+               
+        System.out.println();
         System.out.printf("\t %-10s \t %s \n", "print", "Print annotated source code.");
         System.out.printf("\t %-10s \t %s \n", "dfn", "Display the current function indicating current point of execution.");
         System.out.printf("\t %-10s \t %s \n", "calls", "Print out the function call stack.");
-        System.out.printf("\t %-10s \t %s \n", "fest", "Prints the current state of the Function Environment Stack.");
+        System.out.printf("\t %-10s \t %s \n", "trace", "Turn on function stack tracing."); 
         System.out.printf("\t %-10s \t %s \n", "vars", "Prints all the current variables and their values."); 
         
         System.out.println();
@@ -277,33 +282,11 @@ public class DebuggerConsoleUI {
         commandTable.put("stover", "stepOverLine");
         commandTable.put("stin", "stepIntoLine");
         commandTable.put("calls", "printCallStack");
+        commandTable.put("trace", "turnOnStackTrace");
     }
 
     public void quitExecution(){
         vm.turnOffVm();
-    }
-    
-}
-
-
-
-class commandLineInterfaceFunction{
-    
-    String command;
-    String functionName;
-    String helpMenuDescription;
-    
-}
-
-
-
-
-
-class ConsoleUIunitTests {
-    
-    public static void test_1(DebuggerConsoleUI ui){
-
-        
     }
     
 }

@@ -30,7 +30,7 @@ import java.util.Vector;
  * List current breakpoint settings   **
  * Clear designated breakpoints   **
  * Set function tracing  
- * Print Call Stack    
+ * Print Call Stack     **
  * Display local variables    **
  * Display the source code of the current function  **
  * Continue execution    **
@@ -55,6 +55,7 @@ public class DebuggerVirtualMachine extends VirtualMachine{
     private boolean stepOverFlag;
     private int originalLineNumber;
     private boolean stepIntoFlag;
+    boolean stackTraceFlag;
     
     
 
@@ -180,6 +181,14 @@ public class DebuggerVirtualMachine extends VirtualMachine{
         return false;
     }
     
+    
+    public void turnOnStackTrace() {
+        stackTraceFlag = true;
+    }
+     
+    public boolean isTracing(){
+        return stackTraceFlag;
+    }
     
     
         /*  ---------   Source Code Getters and Setters -----*/
@@ -353,9 +362,9 @@ public class DebuggerVirtualMachine extends VirtualMachine{
             }
         }
     }
+
+  
 }
-
-
 
 
 

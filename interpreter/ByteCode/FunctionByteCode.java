@@ -23,7 +23,21 @@ public class FunctionByteCode extends ByteCode{
     }
     
     public void execute(VirtualMachine vm){
-        ((DebuggerVirtualMachine)vm).setFunction(name, startLine, endLine);
+        DebuggerVirtualMachine debugvm = ((DebuggerVirtualMachine)vm);
+        
+        debugvm.setFunction(name, startLine, endLine);
+        
+        if ( debugvm.isTracing() ){
+            String indent = "";
+            for (int i=0; i<debugvm.sizeOfFunctionCallStack(); i++) indent += "-";
+            
+            System.out.print(indent +  name +"(");
+            int[] args = debugvm.getCurrentFrame();
+            
+            for ( int i=0; i<args.length; i++) System.out.print(args[i]);
+            
+            System.out.println(")");
+        }
     }
     
     

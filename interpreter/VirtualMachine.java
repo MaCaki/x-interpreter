@@ -1,6 +1,7 @@
 package interpreter;
 import java.util.*;
 import interpreter.ByteCode.*;
+import java.lang.reflect.Array;
 /**
  *
  * @author admin
@@ -79,7 +80,7 @@ public class VirtualMachine {
     }
     
     public void newFrameOnRunTimeStackAt( int numArguments){
-        runStack.newFrameAt(numArguments);
+        runStack.newFrameOfSize(numArguments);
     }
     
     public int popRunStack(){
@@ -104,6 +105,15 @@ public class VirtualMachine {
     
     public int peekRunStack(){
         return runStack.peek();
+    }
+    
+    /**
+     * 
+     * @return an array of integers representing the top frame in the RunTimeStack.
+     */
+    public int[] getCurrentFrame(){
+        return runStack.peekFrame();
+        
     }
     
     public int getCurrentOffset(){

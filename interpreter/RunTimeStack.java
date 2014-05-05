@@ -7,7 +7,13 @@ import java.util.*;
  * 
  * The RunTimeStack is modeled using a Stack Object, and each frame  is a Vector. 
  * 
- * 
+ * Known Problems:
+ *  If a frame of size 0 is created, then the frame pointer points to an entry
+ *  that is past the end of the runStack.   
+ *  Fortunately runstack.size - framePointers.peek returns the correct size, 
+ *  as long as there aren't nested function calls to functions with 0 args. 
+ *  This is not guaranteed, and a better solution is necessary. 
+ *
  * @author admin
  */
 public class RunTimeStack {
@@ -40,7 +46,6 @@ public class RunTimeStack {
                 frameArray[i-1].add(stack.remove(startIndex));
             }
         }
-        
         for ( int i=0; i<framePtrs.size(); i++){
             System.out.print(frameArray[i].toString());
         }
@@ -65,19 +70,24 @@ public class RunTimeStack {
     }
     
     
-    /* the offset indicates the number of slots down from the top of the 
-     runtime stack for startgin the new frame
-    */ 
-    public void newFrameAt(int offset){
+
+    /**
+     * 
+     * @param offset indicates the number of slots down from the top of the 
+     *    runtime stack for startgin the new frame
+     */
+    public void newFrameOfSize(int offset){
         int size = runStack.size();
         framePointers.push(size-offset);
         
     }
-            
-    /* Pop the top frame when we return from a function. Before popping the 
-     function's return value is at the top of the stack so we'll save the 
-     value, pop the top frame then push the return value.
-    */
+       
+    /**
+     * Pop the top frame when we return from a function. Before popping the 
+     * function's return value is at the top of the stack so we'll save the 
+     * value, pop the top frame then push the return value.
+     */
+   
     public void popFrame(){
         int top = this.pop();
         int currentSize = runStack.size();
@@ -86,6 +96,20 @@ public class RunTimeStack {
             runStack.remove(startIndex);
         }
         this.push(top);
+    }
+    
+    /**
+     * 
+     * @return  an array containing the integers in the top frame. 
+     */
+    
+    public int[] peekFrame(){
+        int[] frame = new int[sizeOfCurrentFrame()];
+        for(int i=0; i<sizeOfCurrentFrame(); i++){
+            frame[i] = getValueAtOffset(i);
+        }
+        
+        return frame;
     }
             
     //Used to store into variables
@@ -119,5 +143,12 @@ public class RunTimeStack {
         
         return offset;
     }
+    
+    public int sizeOfCurrentFrame(){
+        int size;
+        size = runStack.size() - framePointers.peek();
+        return size;
+    }
+    
     
 }

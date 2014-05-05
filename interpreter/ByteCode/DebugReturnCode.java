@@ -10,7 +10,16 @@ import interpreter.debugger.DebuggerVirtualMachine;
 public class DebugReturnCode extends ReturnByteCode{
     
     public void execute(VirtualMachine vm){
-        super.execute(vm);
-        ((DebuggerVirtualMachine)vm).returnFromFunction();
+        DebuggerVirtualMachine debugvm = ((DebuggerVirtualMachine)vm);
+        super.execute(debugvm);
+        debugvm.returnFromFunction();
+        
+        if(debugvm.isTracing()){
+            String indent = "";
+            for (int i=0; i<debugvm.sizeOfFunctionCallStack(); i++) indent += "-";
+            
+            String name = debugvm.getCurrentFunctionName();
+            System.out.print(indent +  name +"(");
+        }
     }
 }
