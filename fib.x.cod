@@ -18,7 +18,7 @@ LIT 0 x
 GOTO continue<<3>>
 LABEL fib<<2>>
 LINE 2
-FUNCTION fib<<2>> 2 11
+FUNCTION fib 2 11
 FORMAL n 0
 LINE 3
 LOAD 0 n

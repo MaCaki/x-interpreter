@@ -43,7 +43,7 @@ public class DebuggerVirtualMachine extends VirtualMachine{
     private Stack<Integer> validBreakPoints; 
     
     /* Step Out parameters:
-     * if stepOutFlag is set, then when continueExecution
+     * ifwatingToStepOut is set, then when continueExecution
      *is called, the vm will continue running until it has returned from
      *function that was active when it started to run. 
      * 
@@ -51,11 +51,11 @@ public class DebuggerVirtualMachine extends VirtualMachine{
      * has gone below originalEnvironmentSize which is set when stepOut is called. 
      */
     private Stack<Integer> stepOutLevels;
-    private boolean stepOutFlag; 
+    private boolean watingToStepOut; 
     private int originalEnvironmentSize;
-    private boolean stepOverFlag;
-    private int originalLineNumber;
-    private boolean stepIntoFlag;
+    private boolean watingToStepOver;
+    private int lineToStepOver;
+    private boolean watingToStepInto;
     boolean stackTraceFlag;
     
     
@@ -74,11 +74,11 @@ public class DebuggerVirtualMachine extends VirtualMachine{
         runStack = new RunTimeStack();
         returnAddrs = new Stack();
         isRunning = true;
-        stepOutFlag =false;
+        watingToStepOut =false;
         stepOutLevels = new Stack<Integer>();
-        stepOverFlag = false;
+        watingToStepOver = false;
         originalEnvironmentSize = 0;
-        originalLineNumber = 0;
+        lineToStepOver = 0;
         beginScope();
         validBreakPoints = new Stack<Integer>();
         inventoryValidBreakPoints();
@@ -108,14 +108,13 @@ public class DebuggerVirtualMachine extends VirtualMachine{
             /* If the ByteCode executed in this loop was a LineCode where
              the line is breakpoint, then the setCurrentLine() function
              will also turn off the VM.  */
+            if (watingToStepInto && haveSteppedInto()) return;
+            // If watingToStepOver is set, return if stack has gone below original size
+            if (watingToStepOver && haveSteppedOver()) return;            
+            // If watingToStepOut is set, return if stack has gone below original size
+            if (watingToStepOut && haveSteppedOut()) return;
             
-            // If stepOutFlag is set, return if stack has gone below original size
-            if (stepOutFlag && haveSteppedOut()) return;
-            
-            // If stepOverFlag is set, return if stack has gone below original size
-            if (stepOverFlag && haveSteppedOver()) return;
-            
-            if (stepIntoFlag && haveSteppedInto()) return;
+
             
         }
     }
@@ -126,21 +125,22 @@ public class DebuggerVirtualMachine extends VirtualMachine{
      * is stepped out of. 
      */
     public void setStepOverFlag() {
-        stepOverFlag = true;
+        watingToStepOver = true;
+        stepOutLevels.push(sizeOfFunctionCallStack());
+        
         originalEnvironmentSize = sizeOfFunctionCallStack();
-        originalLineNumber = getCurrentLineNumber();
+        lineToStepOver = getCurrentLineNumber();
     }
     
     private boolean haveSteppedOver(){
-        // If execution has stepped out, then we return
-        if( sizeOfFunctionCallStack() <originalEnvironmentSize){
-            stepOverFlag = false;
+        // If execution has stepped out, then we return  
+        if ( haveSteppedOut() ) {
+            watingToStepOver = false;
             return true;
         }
-
-        if ((sizeOfFunctionCallStack() == originalEnvironmentSize)
-                && (getCurrentLineNumber() > originalLineNumber)){
-            stepOverFlag = false;
+        if ((getCurrentLineNumber() != lineToStepOver)){
+            watingToStepOver = false;
+            stepOutLevels.pop();
             return true;
         }
         return false;
@@ -153,42 +153,39 @@ public class DebuggerVirtualMachine extends VirtualMachine{
      * there are several break points at different levels of the FER stack. 
      */
     public void pushStepOut(){
-        stepOutFlag = true;
-        stepOutLevels.push(sizeOfFunctionCallStack());
+       watingToStepOut = true;
+       stepOutLevels.push(sizeOfFunctionCallStack());
         
     }
     
     private boolean haveSteppedOut(){
-        
         if (sizeOfFunctionCallStack() <stepOutLevels.peek()){
             stepOutLevels.pop();
-            if (stepOutLevels.empty()) stepOutFlag=false;
+            if (stepOutLevels.empty()) watingToStepOut=false;
             return true;
         }else {
             return false;
         }
-        
-        
-//        if (sizeOfFunctionCallStack() <originalEnvironmentSize){
-//                stepOutFlag = false;
-//                return true;
-//        }else {
-//            return false;
-//        }
-        
     }
     
     
     
     public void setStepIntoFlag(){
-        stepIntoFlag = true;
+        watingToStepInto = true;
         originalEnvironmentSize = sizeOfFunctionCallStack();
+        stepOutLevels.push(sizeOfFunctionCallStack());
     }
     
     private boolean haveSteppedInto(){
-        if (originalEnvironmentSize < sizeOfFunctionCallStack() 
-                || haveSteppedOver()) {
-            stepIntoFlag = false;
+        if ( haveSteppedOut() ) {
+            watingToStepOver = false;
+            return true;
+        }
+        //Check that the FUNCTION code has been reached
+        if (originalEnvironmentSize < sizeOfFunctionCallStack()
+                && getCurrentFunctionName()!= null) {
+            stepOutLevels.pop();
+            watingToStepInto = false;
             return true;
         } 
         return false;

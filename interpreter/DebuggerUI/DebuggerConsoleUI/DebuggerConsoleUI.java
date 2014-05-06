@@ -104,9 +104,7 @@ public class DebuggerConsoleUI {
                 System.out.println("Something went wrong.");
             }
         }
-        
         printCurrentBreakPoints();
-        
     }
     
     private void clearBreakPoints(){
@@ -142,6 +140,9 @@ public class DebuggerConsoleUI {
         
     }
     
+    /**
+     * Prints out the source code corresponding to the current function. 
+     */
     private void printCurrentFunction(){
         if (vm.isCurrentRecordEmpty()){
             System.out.println("Not currently in a function");
@@ -150,6 +151,7 @@ public class DebuggerConsoleUI {
         System.out.println("--- Current Function:  " + vm.getCurrentFunctionName() +"\n");
         int beginLine = vm.getCurrentFunctionStartLine();
         int endLine = vm.getCurrentFunctionEndLine();
+        if (beginLine<0) return;   // This means that we are in a native function. 
         printSourceBetweenLines(beginLine, endLine);
         System.out.print(" ------------------- \n");
     }
@@ -158,8 +160,8 @@ public class DebuggerConsoleUI {
      * Prints out the source code between lines given as parameters, 
      * and indicates where the current line is. 
      * 
-     * @param start
-     * @param end 
+     * @param start must be >=1
+     * @param end   must be less than or equal to the size of the source code. 
      */
     private void printSourceBetweenLines(int start, int end){
         int currentLineNumber = vm.getCurrentLineNumber();
@@ -189,7 +191,7 @@ public class DebuggerConsoleUI {
      */
     private void printCallStack(){
         int depthOfStack = vm.sizeOfFunctionCallStack();
-        for(int n=0; n < depthOfStack; n++){
+        for(int n=depthOfStack-1; n >= 0; n--){
             String functionName = vm.getNthFunctionName(n);
             int startLine = vm.getNthFunctionStartLine(n);
             
@@ -204,6 +206,7 @@ public class DebuggerConsoleUI {
     
     private void turnOnStackTrace(){
         vm.turnOnStackTrace();
+        System.out.println("Stack Tracing is now ON.\n");
     }
     
     private void printVariables(){
@@ -254,7 +257,8 @@ public class DebuggerConsoleUI {
         System.out.printf("\t %-10s \t %s \n", "stin", "Step into the current line."); 
         System.out.printf("\t %-10s \t %s \n", "setb <lines>", "Set break point on the lines corresponding to the numbers passed to it.");
         System.out.printf("\t %-10s \t %s \n", "clrb <lines>", "Clear break point on the lines corresponding to the numbers passed to it.");
-               
+        System.out.printf("\t %-10s \t %s \n", "breaks", "Print current break points.");        
+        
         System.out.println();
         System.out.printf("\t %-10s \t %s \n", "print", "Print annotated source code.");
         System.out.printf("\t %-10s \t %s \n", "dfn", "Display the current function indicating current point of execution.");
@@ -287,6 +291,7 @@ public class DebuggerConsoleUI {
         commandTable.put("stin", "stepIntoLine");
         commandTable.put("calls", "printCallStack");
         commandTable.put("trace", "turnOnStackTrace");
+        commandTable.put("breaks", "printCurrentBreakPoints");
     }
 
     public void quitExecution(){
