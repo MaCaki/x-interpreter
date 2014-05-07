@@ -1,6 +1,5 @@
 package interpreter;
 import interpreter.ByteCode.*;
-import interpreter.debugger.DebuggerCodeTable;
 import java.io.*;
 import java.util.*;
 /**

@@ -19,6 +19,13 @@ import java.util.Vector;
  * 
  * @author Raskolnikov
  */
+
+
+/* Todo : 
+ * 
+ * Make step into go until the formals are declared. 
+ * 
+ */
 public class DebuggerConsoleUI {
     java.util.HashMap<String,String> commandTable = new java.util.HashMap<String,String>();
     DebuggerVirtualMachine vm;
@@ -78,7 +85,7 @@ public class DebuggerConsoleUI {
             UImethod.invoke(this, (Object[])null);
         } catch (Exception e){
             System.out.println("Something went wrong, try again");
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
     
@@ -105,6 +112,7 @@ public class DebuggerConsoleUI {
             }
         }
         printCurrentBreakPoints();
+        printSourceCode();
     }
     
     private void clearBreakPoints(){
@@ -169,13 +177,13 @@ public class DebuggerConsoleUI {
             String line =vm.getSourceCodeLine(lineNo);
 
             String currentLineFlag = "";
-            if (lineNo == currentLineNumber) currentLineFlag= "\t <= EXECUTION STOPPED HERE";
+            if (lineNo == currentLineNumber) currentLineFlag= "\t <================";
 
             String breakFlag =" ";
             if (vm.isBreakPointSet(lineNo)){
                 breakFlag = "**";
             }
-            System.out.printf("%2s%2d: %-40s %s \n",breakFlag, lineNo, line, currentLineFlag);
+            System.out.printf("%2s%2d: %s %s \n",breakFlag, lineNo, line, currentLineFlag);
         }
     }
 
@@ -251,20 +259,20 @@ public class DebuggerConsoleUI {
   
     private void helpMenu(){
         System.out.println("The following are valid commands: ");       
-        System.out.printf("\t %-10s \t %s  \n", "c", "Continue execution of program until next break point.");
-        System.out.printf("\t %-10s \t %s  \n", "stout", "Step out: continue execution until the current function returns.");
-        System.out.printf("\t %-10s \t %s \n", "stover", "Step over current line."); 
-        System.out.printf("\t %-10s \t %s \n", "stin", "Step into the current line."); 
-        System.out.printf("\t %-10s \t %s \n", "setb <lines>", "Set break point on the lines corresponding to the numbers passed to it.");
-        System.out.printf("\t %-10s \t %s \n", "clrb <lines>", "Clear break point on the lines corresponding to the numbers passed to it.");
-        System.out.printf("\t %-10s \t %s \n", "breaks", "Print current break points.");        
+        System.out.printf("\t %-10s \t %s \n", "c", "Continue execution of program until next break point.");
+        System.out.printf("\t %-10s \t %s \n", "sot", "Step out: continue execution until the current function returns.");
+        System.out.printf("\t %-10s \t %s \n", "sov", "Step over current line."); 
+        System.out.printf("\t %-10s \t %s \n", "sin", "Step into the current line."); 
+        System.out.printf("\t %-10s \t %s \n", "sb <lines>", "Set break point on the lines corresponding to the numbers passed to it.");
+        System.out.printf("\t %-10s \t %s \n", "cb <lines>", "Clear break point on the lines corresponding to the numbers passed to it.");
+        System.out.printf("\t %-10s \t %s \n", "b", "Print current break points.");        
         
         System.out.println();
-        System.out.printf("\t %-10s \t %s \n", "print", "Print annotated source code.");
+        System.out.printf("\t %-10s \t %s \n", "p", "Print annotated source code.");
         System.out.printf("\t %-10s \t %s \n", "dfn", "Display the current function indicating current point of execution.");
-        System.out.printf("\t %-10s \t %s \n", "calls", "Print out the function call stack.");
-        System.out.printf("\t %-10s \t %s \n", "trace", "Turn on function stack tracing."); 
-        System.out.printf("\t %-10s \t %s \n", "vars", "Prints all the current variables and their values."); 
+        System.out.printf("\t %-10s \t %s \n", "stk", "Print out the function call stack.");
+        System.out.printf("\t %-10s \t %s \n", "tr", "Toggle function stack tracing."); 
+        System.out.printf("\t %-10s \t %s \n", "v", "Prints all the current variables and their values."); 
         
         System.out.println();
         System.out.printf("\t %-10s \t %s \n", "help/?", "Print out this help menu.");
@@ -279,18 +287,18 @@ public class DebuggerConsoleUI {
         commandTable.put("?", "helpMenu");
         commandTable.put("help", "helpMenu");
         commandTable.put("c", "continueRunning");
-        commandTable.put("setb", "setBreakPoints");
-        commandTable.put("clrb", "clearBreakPoints");
-        commandTable.put("print", "printSourceCode");
+        commandTable.put("sb", "setBreakPoints");
+        commandTable.put("cb", "clearBreakPoints");
+        commandTable.put("p", "printSourceCode");
         commandTable.put("quit", "quitExecution");
         commandTable.put("dfn", "printCurrentFunction");
         commandTable.put("fest", "printFunctionEnvironmentRecordStack");
-        commandTable.put("vars", "printVariables");
-        commandTable.put("stout", "stepOutOfCurrentFunction");
-        commandTable.put("stover", "stepOverLine");
-        commandTable.put("stin", "stepIntoLine");
-        commandTable.put("calls", "printCallStack");
-        commandTable.put("trace", "turnOnStackTrace");
+        commandTable.put("v", "printVariables");
+        commandTable.put("sot", "stepOutOfCurrentFunction");
+        commandTable.put("sov", "stepOverLine");
+        commandTable.put("sin", "stepIntoLine");
+        commandTable.put("stk", "printCallStack");
+        commandTable.put("tr", "turnOnStackTrace");
         commandTable.put("breaks", "printCurrentBreakPoints");
     }
 

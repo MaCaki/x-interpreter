@@ -1,7 +1,6 @@
 package interpreter;
 
 import interpreter.DebuggerUI.DebuggerConsoleUI.DebuggerConsoleUI;
-import interpreter.debugger.DebuggerCodeTable;
 import interpreter.debugger.DebuggerVirtualMachine;
 import java.io.*;
 import java.util.Scanner;

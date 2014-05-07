@@ -41,6 +41,7 @@ public class DebuggerVirtualMachine extends VirtualMachine{
     private Vector<AnnotatedSourceLine> sourceCodeLines;
     private Stack<FunctionEnvironmentRecord> EnvironmentRecordStack;
     private Stack<Integer> validBreakPoints; 
+    private Class classOfLastByteCodeExecuted; 
     
     /* Step Out parameters:
      * ifwatingToStepOut is set, then when continueExecution
@@ -52,7 +53,6 @@ public class DebuggerVirtualMachine extends VirtualMachine{
      */
     private Stack<Integer> stepOutLevels;
     private boolean watingToStepOut; 
-    private int originalEnvironmentSize;
     private boolean watingToStepOver;
     private int lineToStepOver;
     private boolean watingToStepInto;
@@ -77,7 +77,6 @@ public class DebuggerVirtualMachine extends VirtualMachine{
         watingToStepOut =false;
         stepOutLevels = new Stack<Integer>();
         watingToStepOver = false;
-        originalEnvironmentSize = 0;
         lineToStepOver = 0;
         beginScope();
         validBreakPoints = new Stack<Integer>();
@@ -96,9 +95,13 @@ public class DebuggerVirtualMachine extends VirtualMachine{
              current function, when stepOut has been set.*/
         while (isRunning){
             ByteCode code = program.getCode(pc);
+            classOfLastByteCodeExecuted = code.getClass();
+         
+            if (watingToStepInto && haveSteppedInto()) return;
+            
             code.execute(this);
             // only dump if the current code is not DUMP and dumping is set. 
-            if (!code.getClass().getName().equals("interpreter.ByteCode.DumpByteCode")
+            if ( classOfLastByteCodeExecuted != DumpByteCode.class
                     && dumping){
                 System.out.println(code.toString());
                 runStack.dump();
@@ -108,14 +111,12 @@ public class DebuggerVirtualMachine extends VirtualMachine{
             /* If the ByteCode executed in this loop was a LineCode where
              the line is breakpoint, then the setCurrentLine() function
              will also turn off the VM.  */
-            if (watingToStepInto && haveSteppedInto()) return;
+               
+
             // If watingToStepOver is set, return if stack has gone below original size
             if (watingToStepOver && haveSteppedOver()) return;            
             // If watingToStepOut is set, return if stack has gone below original size
             if (watingToStepOut && haveSteppedOut()) return;
-            
-
-            
         }
     }
     
@@ -127,8 +128,6 @@ public class DebuggerVirtualMachine extends VirtualMachine{
     public void setStepOverFlag() {
         watingToStepOver = true;
         stepOutLevels.push(sizeOfFunctionCallStack());
-        
-        originalEnvironmentSize = sizeOfFunctionCallStack();
         lineToStepOver = getCurrentLineNumber();
     }
     
@@ -149,7 +148,7 @@ public class DebuggerVirtualMachine extends VirtualMachine{
     
     /**
      * This will cause the vm to stop running once the FER stack decreases
-     * to CurrentSize - 1.   Mulitple step outs can be implemented, so that
+     * to CurrentSize - 1.   Multiple step outs can be implemented, so that
      * there are several break points at different levels of the FER stack. 
      */
     public void pushStepOut(){
@@ -172,18 +171,18 @@ public class DebuggerVirtualMachine extends VirtualMachine{
     
     public void setStepIntoFlag(){
         watingToStepInto = true;
-        originalEnvironmentSize = sizeOfFunctionCallStack();
         stepOutLevels.push(sizeOfFunctionCallStack());
     }
     
     private boolean haveSteppedInto(){
         if ( haveSteppedOut() ) {
-            watingToStepOver = false;
+            watingToStepInto = false;
             return true;
         }
-        //Check that the FUNCTION code has been reached
-        if (originalEnvironmentSize < sizeOfFunctionCallStack()
-                && getCurrentFunctionName()!= null) {
+        //Check that the FUNCTION code and all FORMALS have been reached. 
+        if (stepOutLevels.peek() < sizeOfFunctionCallStack()
+                && (this.getCurrentFunctionName()!=null)
+                && (classOfLastByteCodeExecuted!= FormalByteCode.class)) {
             stepOutLevels.pop();
             watingToStepInto = false;
             return true;
